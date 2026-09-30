@@ -1,0 +1,14 @@
+{
+  "item": "https://github.com/codepath/pathreview-ai301-fa26-s1/issues/53",
+  "checks": [
+    {"name": "Claim names its issue", "grade": "fail", "evidence": "Draft opens 'I'd like to work on this one' and never gives #53 or the issue URL; otherwise it promises investigation plus a repro, with no fix, no date and no results claimed"},
+    {"name": "Environment recorded", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"},
+    {"name": "Steps followable", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"},
+    {"name": "Original issue stated", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"},
+    {"name": "Behavior matches issue", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"},
+    {"name": "Honest outcome", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"},
+    {"name": "Repo conventions", "grade": "pass", "evidence": "docs/CONTRIBUTING.md step 4 says 'Comment on the issue to let others know you're working on it'; no AI-disclosure requirement in CONTRIBUTING, README or PR template"},
+    {"name": "Artifacts quoted verbatim", "grade": "unclear", "evidence": "not yet applicable: claim-only draft"}
+  ],
+  "verdict": "reject"
+}

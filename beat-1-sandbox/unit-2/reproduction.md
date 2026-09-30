@@ -15,8 +15,7 @@ label is not graded.
 
 **GitHub username**
 
-[Your GitHub username, exactly as it appears on your profile — no `@`, no profile URL. Your
-comments upstream are identified by this name.]
+codekikicode
 
 ---
 
@@ -24,16 +23,19 @@ comments upstream are identified by this name.]
 
 **Claim comment**
 
-[Link to the comment where you claimed the issue. Use the comment's own permalink, not the
-issue page on its own. **Then paste the text of that comment underneath the link** — the
-pasted text is what this field is graded on, so copy across what you actually posted.]
+[https://github.com/codepath/pathreview-ai301-fa26-s1/issues/53#issuecomment-5904885781]
 
 **Reproduction comment**
 
-[Link to the comment where you posted your reproduction. It must record the environment
-(OS, relevant versions, code state), steps a stranger could follow, and what you observed.
-**Then paste the text of that comment underneath the link** — the pasted text is what this
-field is graded on, so copy across what you actually posted.]
+I'd like to work on #53. Per the report, the `scrub()` pattern catches dashed numbers like `555-123-4567` but lets the parenthesized
+`(555) 123-4567` format through unredacted, and `detect()` reports no PII for it.
+
+My plan: reproduce this in a clean Python environment by running the snippet from the issue body exactly as written, then running the four related failing
+tests (`test_us_phone_number_redaction`, `test_us_phone_formats`,
+`test_detect_phone_pii`, `test_phone_at_start_of_text`) from
+`tests/unit/test_pii_scrubber.py`. I'll post my environment, the exact steps, and the observed output here -- investigation only for now, no fix promised.
+
+---
 
 ## Eval iterations
 
