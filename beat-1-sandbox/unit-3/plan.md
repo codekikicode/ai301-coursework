@@ -143,20 +143,22 @@ will mention in the PR.
 
 ```
 The build followed the plan; step 3's conditional widening triggered.
-`test_us_phone_formats` asserts `+1 555 123 4567`, which requires spaces
-in the two separator classes after the area code, so both became
-`[-. ]?`. The widening went no further than the tests demand. The
-country-code group's own separator stayed `[-.]?`, so that format scrubs
-to `+1 [REDACTED]` — the test asserts a redaction is present, which
-holds. The visible `+1` country code is a deliberate boundary, not an
-oversight.
+`test_us_phone_formats` asserts `+1 555 123 4567`, so both separator
+classes after the area code became `[-. ]?`; no wider. The country-code
+group's own separator stayed `[-.]?`, so that format scrubs to
+`+1 [REDACTED]` — deliberate boundary.
 
-Unrelated, pre-existing, NOT fixed: `test_mixed_pii_and_text` fails on
-main too. Main's case-insensitive `street_address` pattern matches
-"5 years developing Python appl" — its `Pl` alternative hits the "pl"
-in "applications". Verified on clean main via `git stash` + single-test
-run (fails without my changes); my diff touches only the `phone_us`
-line. Fixing it would be scope creep beyond issue #53.
+Marker scope, corrected at pre-check: the first version of this branch
+also removed the xfail(strict=True) marker on test_mixed_pii_and_text
+(it cites issue #53). That test fails because of the pre-existing
+case-insensitive street_address pattern ("Python appl" matching the
+`Pl` alternative in "applications") — a different bug, not the phone
+pattern — so the marker was restored. Only the four phone-test markers
+come out. An earlier version of this section claimed the failure was
+"verified on clean main via git stash"; that check was invalid (the
+stash could not revert committed marker removals, so it ran on the
+branch). On clean main the test xfails: 20 passed, 5 xfailed, no
+failures.
 ```
 
 ---
