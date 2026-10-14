@@ -28,7 +28,35 @@ fields.
 
 **Run history**
 
-full v1 = 14/20 (six clear-accepts false-rejected on test-evidence) → --only tuning run = 9/9 with canaries → confirming full run = 20/20 PASS, all categories floored. (The earlier 0/20 error runs were the Windows stdin/encoding environment fix — worth one line.)
+*Run history: oldest → newest (quoted from each run's own output):*
+
+1. First full run (`eval-run-v1.txt`, written 2026-10-12T06:08:04Z):
+   "categories: clear-accept 1/7  not-tested 4/4  silent-drift 4/4
+   standards-wall 2/2  unreviewable 3/3" / "agreement: 14/20 scored
+   items  (bar: 18/20: below the bar)". All 13 reject packages agreed;
+   the six disagreements were all clear-accepts, five flagged
+   "failed: test-evidence" and three of those also
+   "failed: test-evidence, unsubstantiated-claims" (pkg-05, pkg-08,
+   pkg-19).
+
+2. Tuning run (`--only pkg-05,pkg-08,pkg-11,pkg-13,pkg-16,pkg-19,pkg-02,
+   pkg-03,pkg-04`, after loosening the test-evidence pass condition):
+   terminal reported "agreement: 9/9 scored items" — all six
+   disagreements flipped to agree and the three canaries (pkg-02
+   clear-accept, pkg-03 silent-drift, pkg-04 not-tested) held their
+   previous verdicts. Partial runs refuse --save-run, so this run
+   exists only as console output, not a file.
+
+3. Confirming full run (`eval-run.txt`, written 2026-10-12T06:45:50Z —
+   the submitted run): "categories: clear-accept 7/7  not-tested 4/4
+   silent-drift 4/4  standards-wall 2/2  unreviewable 3/3" /
+   "agreement: 20/20 scored items  (bar: 18/20: PASS)".
+
+*Environment note:* my first two harness attempts graded nothing ("20
+item(s) errored; fix and re-run." / "claude exited 1: Warning: no
+stdin data received in 3s...") — a Windows pipe-encoding failure
+(cp1252 vs the '→' character in package text), fixed by running with
+PYTHONUTF8=1. Zero packages were graded, so they carry no score.
 
 **Package analysis**
 
