@@ -1,0 +1,21 @@
+# Rubric: is this pull request ready to submit?
+
+## Checks
+
+| Check | Evidence | Pass condition | Weight |
+|---|---|---|---|
+| plan-fidelity | The diff's changed files and hunks, read against the plan's stated files, scope, and steps — eval: the "Plan context" section against the "Candidate PR" diff; live: `plan.md` plus its `## Deviations` against `git diff main...HEAD` | Passes if every changed file and every hunk implements a step the plan names or that its deviation notes disclose. Fails the moment the diff does more or less than the plan without saying so: an extra file, a missing planned step, a hunk outside the plan's boundary. A deviation disclosed in the plan's notes or the description passes. | required |
+| description-accuracy | The PR title and description's claims, read hunk by hunk against the diff | Passes if each claimed change corresponds to a hunk in the diff and no claim contradicts what the diff actually does. Fails when the description asserts something the diff flatly contradicts (says "only X changed" while the diff also changes Y, claims a fix the diff does not contain). | required |
+| test-evidence | The test evidence block, read against the plan's test plan and the repo's stated checks — eval: "Test evidence" against "Plan context"'s test plan and any checks named in "Repo facts"; live: `test_evidence.md` against the PR template's Testing section and the repo's own checks | Passes if the plan's own test plan is visibly executed against the branch: at least one observable outcome tied to the issue's behavior appears (the repro or its equivalent run, with output showing the expected-after state), and every remaining test-plan item or repo-stated check is covered by a shown result, a specific checkable claim (a named command and its outcome, e.g. "cargo test -p ignore passes (214 tests)"), or an honest "could not run, here is why" note. Fails only if there is no evidence at all; if no observable outcome for the plan's test plan appears anywhere; if the output shown does not demonstrate the expected-after state or shows it failing while claiming success; or if the evidence is unrelated to the issue and plan. Checks the author cannot run before the PR opens (CI gates) are never required; an unticked box or honest note covers them. A failing check reported honestly with its output passes. | required |
+| diff-reviewability | The diff itself, read line by line | Passes if every hunk is on-topic for the issue the plan belongs to and the diff carries no debris: debug or print output, commented-out code, unrelated reformats, drive-by edits in files the issue does not touch. Fails when debris or an unrelated hunk buries the change. A formatting pass the plan named in advance does not fail. | required |
+| standards-compliance | The repo's stated asks, read against the title and description — eval: the asks named in "Repo facts" (PR template sections, contribution policy, AI policy); live: `.github/PULL_REQUEST_TEMPLATE.md` and `docs/CONTRIBUTING.md` | Passes if every ask the repo states is met: each required template section has real content, the issue is referenced where required, the AI-use disclosure appears where policy asks for one. Fails when a stated ask is ignored. Where the repo states no asks, there is nothing to violate and this check passes. | required |
+| unsubstantiated-claims | The description's claims of coverage, behavior, or testing, read against the test evidence | Passes if no description claim asserts a result the evidence does not show. Fails (reported in the summary, never holds the package) on claims like "all tests pass" with no pasted output or "rendering unchanged" with no supporting check. | preferred |
+
+## Verdict rule
+
+accept (ready to submit) only if every required check passes. Preferred
+checks never change the verdict; their failures are reported in the
+summary. A required check graded unclear counts as fail and yields
+reject (hold): an unverifiable claim is a failing claim, and a PR you
+cannot verify from its own text is not ready to submit. The verdict
+space is binary.
