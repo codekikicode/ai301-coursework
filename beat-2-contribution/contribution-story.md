@@ -1,4 +1,4 @@
-# Contribution: [Issue Title]
+# Contribution: CLM_NAMELIST_OPTS should not allow items changed to also be in user_nl_clm
 
 Path: `beat-2-contribution/contribution-story.md`
 
@@ -8,11 +8,10 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
-**Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
-**Issue:** [GitHub issue link]
-**Pull Request:** [GitHub PR link, once opened]
+**Student:** Kiyali Ross
+**GitHub Username:** codekikicode
+**Issue:** https://github.com/ESCOMP/CTSM/issues/2256
+**Pull Request:** [to be opened in Unit 7/8]
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -55,10 +54,8 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
-
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+**Unit 5:** Built my issue-scout, then rebuilt its rubric twice to choose my issue
+I installed the issue-scout over my unit-1 issue-select, wrote my fit profile, and built a search strategy from two gh search issues queries with ranking filters. My scan graded five candidates with four accepts (all from one repo, srtab/daiv — zero diversity), but my instructor directed me to pick from the AI301 Issue Selection site. There my v1 rubric rejected everything real; on my TF's advice I loosened three checks (60-day staleness windows for claims and PRs, clearer spec bar). When the scout then flagged its own inconsistency — a stale-assignee case on OpenSearch #4253 — I patched that too (v3). It still rejected that issue on new evidence, which told me the tool was working, not just permissive. My final picks graded: CTSM#2256 accepted 10/10, django-rusty-templates#27 rejected (AI policy bans LLM help on good-first-issues plus a fresh claim). I chose CTSM#2256.
 
 **Unit 6: [one line on the tool work]**
 
