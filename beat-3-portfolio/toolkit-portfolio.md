@@ -8,13 +8,17 @@ Path: `beat-3-portfolio/toolkit-portfolio.md`
 
 **issue-scout**
 
-**What it is, and the judgment hole I wrote:** my issue-selection tool: two `gh search issues`
+**What it is, and the judgment hole I wrote:** 
+
+my issue-selection tool: two `gh search issues`
 queries with ranking filters drive a scan, and my rubric grades each candidate. The judgment
 hole I wrote is the rubric itself — scope feasibility, claim freshness, spec quality, fit,
 repo health, and an AI-policy check — every threshold in it is a decision I made about what
 "claimable by a student" means.
 
-**How it evolved, dated:** v1 was tuned to the unit-1 sandbox and rejected nearly everything
+**How it evolved, dated:** 
+
+v1 was tuned to the unit-1 sandbox and rejected nearly everything
 real in the wild (October 2026). On my TF's direction I moved to the AI 301 Issue Selection
 site and loosened three checks — 60-day staleness windows for claims and PRs, a clearer
 spec bar (v2, October 2026). When the scout flagged its own inconsistency — accepting a
@@ -22,21 +26,21 @@ stale-assignee case on OpenSearch #4253 — I patched the claim logic (v3, Octob
 Unit 6 I replaced my "one bounded change" scope check with the staff scope-feasible row,
 because scope was rejecting issues I could have done (October 2026).
 
-**Evidence:** final grade line from my run: `CTSM#2256 accepted 10/10` alongside
-`django-rusty-templates#27 rejected` — the rejection on grounds I would have missed
-unaided: an AI policy banning LLM help on good-first-issues plus a 17-day-old
-owner-approved claim. The v3 patch was driven by a failure the scout reported about
-itself.
+**Evidence:** 
+
+Final grade line from my run: `CTSM#2256 accepted 10/10` alongside `django-rusty-templates#27 rejected` — the rejection on grounds I would have missed unaided: an AI policy banning LLM help on good-first-issues plus a 17-day-old owner-approved claim. The v3 patch was driven by a failure the scout reported about itself.
 
 **ship-gate**
 
 **What it is, and the judgment hole I wrote:** 
+
 A PreToolUse hook that runs my manifest of repo checks plus a PR pre-check before any outgoing command. 
 The judgment hole I wrote is the ship-manifest: which checks count as "this branch is shippable" on this repo, on this
 machine — including the decision to document a check that *fails on unmodified master* (3425-test Perl suite, exit 254, 1052 pre-existing Windows failures) instead of hiding it.
 
-**How it evolved, dated:** 
-It fought me for a week before it ever fired (November 2026).
+**How it evolved, dated: November 2026** 
+
+It fought me for a week before it ever fired (11/11 to 11/22).
 - Layer 1: Stale Claude sessions don't reload hooks — learned by retaught-full-exit.
 - Layer 2: The hook called `python3`, a broken Microsoft Store stub on my box — changed to
 `python`. 
@@ -118,80 +122,68 @@ stands (one bullet per tool; a compact sentence or two is fine).
 
 ## The Arc
 
-The story of the toolkit in order: friction, change, result, dated.
-Your weekly Toolkit entries are the source; read your own record and
-tell it oldest first.
+**Beat 1 | November 04 2022**
 
-Write one block per beat, in the shape below, oldest first. Keep all four labels on every
-beat, each on its own line. The `Result:` line is what the beat was for: it says what
-happened *after* the change, which is not the same sentence as the change itself. If a beat
-never reached a result, write `Result: none` — an honest beat that did not land still counts
-fully as a beat.
-
-Full credit asks for **at least two** beats whose `Result:` line names something that
-actually happened afterwards. A beat about something that did not work counts fully as a
-beat, and when the work happened never moves this score.
-
-**Beat 1**
-Date: October 2026
-Friction: my first wild scans returned five candidates with four accepts — all from one
+- Friction: my first wild scans returned five candidates with four accepts — all from one
 repo, zero diversity — and the v1 rubric rejected nearly everything real because it was
 tuned to the sandbox.
-Change: moved to the AI 301 Issue Selection site picks, loosened three checks on TF
+- Change: moved to the AI 301 Issue Selection site picks, loosened three checks on TF
 advice (v2), then patched the stale-assignee inconsistency the scout flagged on itself (v3).
-Result: CTSM#2256 accepted 10/10 and claimed, with a claim comment that raised my open
+
+`Result`: CTSM#2256 accepted 10/10 and claimed, with a claim comment that raised my open
 edge to the maintainer up front.
 
-**Beat 2**
-Date: October 2026
-Friction: the voice guard never fired on its wiring test — three separate causes
+**Beat 2 | November 11 2026**
+- Friction: the voice guard never fired on its wiring test — three separate causes
 (symlink-copies, missing Python, stale session) plus a subtler one (claude.CMD can't be
 subprocess-launched on Windows).
-Change: pointer-file fallback, installed Python 3.12 and rewrote the hook, retaught the
-full exit, switched to the native claude.exe build; reported the Windows bugs in
-#dts-fa26-ai301-build-support.
-Result: verified live stops on outgoing commands, and every comment I posted this term
+- Change: pointer-file fallback, installed Python 3.12 and rewrote the hook, retaught the
+full exit, switched to the native claude.exe build.
+
+`Result`: verified live stops on outgoing commands, and every comment I posted this term
 passed through it with the disclosure line intact.
 
-**Beat 3**
-Date: October 2026
-Friction: the installed repro-check rubric was the staff template — nothing could be
+**Beat 3 | Date: November 11 2026**
+
+- Friction: the installed repro-check rubric was the staff template — nothing could be
 graded until I wrote the checks; my first report failed four of five (environment not
 repeatable, paraphrase dressed as a quote).
-Change: wrote the wild-scoped rubric myself; rewrote the report with real terminal output,
+- Change: wrote the wild-scoped rubric myself; rewrote the report with real terminal output,
 exact quotes with verified line numbers, and inlined fixtures.
-Result: accept on the second run, and a reproduction that plan-check later accepted as
+
+`Result`: accept on the second run, and a reproduction that plan-check later accepted as
 grounding for my plan.
 
-**Beat 4**
-Date: November 11 2026
-Friction: ship-gate never stopped a `gh pr create` test for days — silent all the way down
+**Beat 4 | November 11 2026**
+- Friction: ship-gate never stopped a `gh pr create` test for days — silent all the way down
 to the course scripts gating on `tool_name != "Bash"` while my shell is PowerShell.
-Change: diagnosed in four layers (sessions, python3 stub, matcher, script gate), patched
+- Change: diagnosed in four layers (sessions, python3 stub, matcher, script gate), patched
 both check scripts, rewrote settings.json, verified with canary hooks and logging.
-Result: ship-gate and voice-guard both confirmed live; my ship-manifest exists with an
+
+`Result`: ship-gate and voice-guard both confirmed live; my ship-manifest exists with an
 honest entry for a check that fails on unmodified master on this machine.
 
-**Beat 5**
-Date: November 17 2026
-Friction: plan-check rejected my plan twice — first for no posted repro, then for a
+**Beat 5 | November 17 2026**
+
+- Friction: plan-check rejected my plan twice — first for no posted repro, then for a
 self-contradiction (first-write-wins vs. "later files override"), which it proved against
 the live repo and the buildnml call path.
-Change: posted a standalone repro comment to ESCOMP/CTSM#2256; dropped the unverifiable
+- Change: posted a standalone repro comment to ESCOMP/CTSM#2256; dropped the unverifiable
 argument and said so openly; added the start_ymd/finidat/nrevsn skip design and moved the
 check behind a flag so CAM's drv_flds_in path stays untouched.
-Result: verdict accept on the third run — the plan that my merged fix and its test were
+
+`Result`: verdict accept on the third run — the plan that my merged fix and its test were
 built directly from.
 
-**Beat 6**
-Date: November 22 2026
-Friction: my new failtest "passed" on unmodified master for the wrong reason — the suite's
+**Beat 6 | November 22 2026**
+- Friction: my new failtest "passed" on unmodified master for the wrong reason — the suite's
 default inputdata root is a Yellowstone path that doesn't exist here, killing failtests
 before namelist processing.
-Change: set CSMDATA=/tmp/inputdata so the suite reaches the code under test; re-ran and
+- Change: set CSMDATA=/tmp/inputdata so the suite reaches the code under test; re-ran and
 got the true red; then implemented the recorded-set + flagged-conflict check in
 CLMBuildNamelist.pm.
-Result: the manual rehearsal flipped from silent `exit: 0` to a fatal_error naming
+
+`Result`: the manual rehearsal flipped from silent `exit: 0` to a fatal_error naming
 `mksrf_lsmlon` and both sources, control runs stayed green, and the suite flipped my test
 from `not ok` to `ok` with no new failures against the documented Windows baseline — the
 evidence behind my opened PR.
