@@ -71,7 +71,7 @@ Claim comment: https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-686906441
 
 - What it produced: a scan of five candidates with four accepts (all one
   repo), then after two rubric rebuilds, final verdicts on my site picks:
-  CTSM#2256 accepted 10/10 with a "moderate" difficulty note,
+  CTSM#2256 accepted 10/10 with an "ambitious" difficulty note,
   django-rusty-templates#27 rejected on AI policy plus a fresh claim.
 
 - Difficulties: v1 rejected everything real (sandbox-tuned scope check);
@@ -104,7 +104,7 @@ The precedence rules give CLM_NAMELIST_OPTS higher priority and silently ignore 
 
 **Affected Components**
 
-The build-namelist layer: bld/CLMBuildNamelist.pm (where namelist precedence is resolved) — that's the location you flagged in your claim comment, pending maintainer confirmation. Tests would live in bld/unit_testers/build-namelist_test.pl (the Perl test driver you just ran). Also useful to note what's out of scope per the issue: duplicates within user_nl_clm itself (last-one-wins) — the maintainer explicitly carved that out as a separate, harder problem.
+The build-namelist layer: bld/CLMBuildNamelist.pm (where namelist precedence is resolved) — the same location identified in my claim comment, pending maintainer confirmation. Tests would live in bld/unit_testers/build-namelist_test.pl, the Perl test driver used in the Reproduction section below. Also useful to note what's out of scope per the issue: duplicates within user_nl_clm itself (last-one-wins) — the maintainer explicitly carved that out as a separate, harder problem.
 
 **Toolkit**
 
@@ -225,7 +225,7 @@ Control case: `hist_mfilt = 5` — the file is honored when nothing
 conflicts, so the silent loss happens only on duplication, not from
 the infile being ignored outright.
 
-A second, independent repro (use_c13, run from bld/unit_testers) was posted to the issue thread: [https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-6869064418] — or swap one to match the other.
+A second, independent repro (use_c13, run from bld/unit_testers) was posted to the issue thread: https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-7086475038
 
 **My findings:** 
 - The issue is real today: a variable set in both CLM_NAMELIST_OPTS
@@ -244,8 +244,6 @@ A second, independent repro (use_c13, run from bld/unit_testers) was posted to t
   combines -namelist with --infile against empty_user_nl_clm; no
   existing test sets the same variable in both. The duplicate-check
   test belongs there.
-- Commit showing reproduction: none — evidence is the terminal
-  output pasted above, rerun from the steps in this report.
 
 **Toolkit**
 
@@ -330,6 +328,10 @@ All output captured in test_evidence.md.
 
 **[2026-11-22]**
 
+Plan accepted by plan-check on the third run. Key design decisions locked: check lives in process_namelist_infile behind a new check_namelist_opts_conflicts => 1 flag passed only by process_namelist_commandline_infile (keeps CAM's drv_flds_in call at line 4390 unaffected); start_ymd skipped on the -namelist side and finidat/nrevsn on the infile side because buildnml injects those itself. Wrong turn recorded: my first plan rejected die_on_conflict with a "later files override earlier ones" argument that contradicts first-write-wins — plan-check caught it against buildnml:382.
+
+**[2026-11-23]**
+
 Built the fix on fix/2256-namelist-opts-conflict: the recording loop in
 process_namelist_commandline_namelist (start_ymd skipped), and the conflict
 check in process_namelist_infile behind check_namelist_opts_conflicts
@@ -340,10 +342,6 @@ looks identical to no check until the flag is wired through; and the suite's
 default inputdata path manufactured a false pass that only the manual
 rehearsal exposed. PR #4344 opened the same day; ship-gate caught four
 formatting defects in pr_draft.md before they went public.
-
-**[2026-11-22]**
-
-Plan accepted by plan-check on the third run. Key design decisions locked: check lives in process_namelist_infile behind a new check_namelist_opts_conflicts => 1 flag passed only by process_namelist_commandline_infile (keeps CAM's drv_flds_in call at line 4390 unaffected); start_ymd skipped on the -namelist side and finidat/nrevsn on the infile side because buildnml injects those itself. Wrong turn recorded: my first plan rejected die_on_conflict with a "later files override earlier ones" argument that contradicts first-write-wins — plan-check caught it against buildnml:382
 
 **Toolkit**
 
@@ -368,25 +366,16 @@ user-infile path; finidat/nrevsn skipped), the new failtest
 
 **Maintainer Feedback:**
 
-- [2026.23.11]: None yet
-
-- [2026.23.11]: PR just opened, so no maintainer review/response yet. 
+- [2026-11-23]: None yet — PR just opened, so no maintainer review or response yet.
 
 **Status:** Awaiting review. 
 
 **Toolkit**
 
-- Tool: ship-manifest checks + the red/green suite pair, evidence in test_evidence.md.
-- What it produced: failtest red on unmodified master with CSMDATA set (not ok —
-  the earlier "ok" was a false pass from the Yellowstone default inputdata path,
-  caught and documented), rehearsal flipped from silent exit 0 to the fatal_error
-  naming mksrf_lsmlon, both no-conflict controls stayed exit 0, and the green run
-  showed ok with no new failures vs. the documented Windows baseline.
-- Difficulties: 3425 tests × ~1 hour per run on Windows; grep refused the binary-ish
-  output until -a; the suite and any manual rehearsal share the working directory
-  and can't run concurrently.
-- What changed: all suite invocations now carry CSMDATA=/tmp/inputdata, and the
-  baseline-exit-254 quirk is recorded in ship-manifest.md instead of being fought.
+- Tool: ship-gate pre-publication review + pr-precheck, run against the drafted PR body before `gh pr create`.
+- What it produced: ship-gate STOPped the first `gh pr create` attempt and flagged four defects in pr_draft.md (a duplicated "Fixes" line, duplicated error output, a missing trailing newline, and a missing footer) — all fixed before the PR went public, so the published body at PR #4344 is the gate-verified version.
+- Difficulties: the gate only fires on the outgoing command, so the body had to be complete in pr_draft.md before the single shot at `gh pr create --repo ESCOMP/CTSM --base master --head codekikicode:fix/2256-namelist-opts-conflict`.
+- What changed: drafting the PR body as a file and letting the gate review it as a normal artifact became part of the workflow, instead of composing the body inline at the command line.
 
 ---
 
@@ -410,15 +399,15 @@ then fixed and reported. The false-pass suite run — my "red" test passed for
 the wrong reason until I traced the Yellowstone default inputdata path.
 And plan-check's honest-uncertainty rejection, which forced me to delete an
 argument I liked but couldn't verify — the plan that survived it is the one
-my merged fix was built from.
+my open PR was built from.
 
 **What I'd Do Differently Next Time**
 
 - Verify the gate before trusting it: A canary hook and one deliberate
-outgoing-command test on day one would have saved me a week of testing. 
+  outgoing-command test on day one would have saved me a week of testing. 
 - Diff suite output against a stored baseline file instead of eyeballing before/after logs.
 - Write the repro as a runnable script from the start rather than
-reconstructing it from terminal history.
+  reconstructing it from terminal history.
 
 ---
 
