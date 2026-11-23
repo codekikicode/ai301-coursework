@@ -268,6 +268,7 @@ A second, independent repro (use_c13, run from bld/unit_testers) was posted to t
 ## Solution Approach
 
 **Analysis**
+
 `CLM_NAMELIST_OPTS` and `user_nl_clm` enter through `cime_config/buildnml` as the `-namelist` and `-infile` arguments to `bld/build-namelist`. In `CLMBuildNamelist.pm`, `process_namelist_user_input` (line 594) calls `process_namelist_commandline_namelist` (line 1524) first, then `process_namelist_commandline_infile` (line 1575), which calls `process_namelist_infile` (line 1547).
 
 Both merge via `Build::Namelist::merge_nl` (`cime/utils/perl5lib/Build/Namelist.pm:373`), which is first-write-wins: variables already set are silently skipped. So any item set in both places keeps the `CLM_NAMELIST_OPTS` value and the user's `user_nl_clm` edit is silently discarded — exactly the behavior described in the issue. The issue asks for a clear "change one or the other" message when a setting appears in both `CLM_NAMELIST_OPTS` and `user_nl_clm`, so the check belongs in `CLMBuildNamelist.pm`.
@@ -281,11 +282,13 @@ The check lives in `process_namelist_infile` (where `$nl_infile_valid` already e
 I reproduced this on master (`5e1da3a`): with `use_c13=.true.` passed via `-namelist` (what `CLM_NAMELIST_OPTS` maps to) and `use_c13=.false.` in the `-infile` (what `user_nl_clm` maps to), `build-namelist` completed with no error or warning, and the generated `lnd_in` contained `use_c13 = .true.` — the infile value was silently discarded. Repro details posted in this comment: https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-7086475038
 
 **Proposed Solution**
+
 - In `process_namelist_commandline_namelist`, record the set of variables (group + name) that the `-namelist` pass set (e.g. into `$nl_flags`), skipping known buildnml-injected variables such as `start_ymd`.
 - In `process_namelist_commandline_infile` (1575 — which handles only user `-infile` arguments), pass a new `check_namelist_opts_conflicts => 1` option to `process_namelist_infile`. There, before merging each user infile, enumerate `$nl_infile_valid` with `get_group_names`/`get_variable_names`/`get_variable_value`, collect any variables present in the recorded set (skipping `finidat`/`nrevsn`), and if the list is non-empty, `$log->fatal_error` naming every duplicated variable and telling the user to remove the setting from either `CLM_NAMELIST_OPTS` or `user_nl_clm` — per the issue text.
 - Out of scope, per the issue: duplicates within `user_nl` files, and no change to `merge_nl` itself (shared CIME code).
 
 **Implementation Plan**
+
 - Branch `fix/2256-namelist-opts-conflict` (or per CTSM convention).
 - Add the variable-set recording in `process_namelist_commandline_namelist` and the duplicate check in `process_namelist_infile` behind the new flag, passed only from `process_namelist_commandline_infile`.
 - Add a test to `bld/unit_testers/build-namelist_test.pl` that passes both a `-namelist` fragment and an infile setting the same variable, and asserts the death — using the existing fixture files (`myuser_nl_clm`/`empty_user_nl_clm`) as a model. Verify it fails without the fix, passes with it.
