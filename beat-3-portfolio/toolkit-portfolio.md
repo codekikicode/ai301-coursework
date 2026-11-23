@@ -13,8 +13,7 @@ Path: `beat-3-portfolio/toolkit-portfolio.md`
 my issue-selection tool: two `gh search issues`
 queries with ranking filters drive a scan, and my rubric grades each candidate. The judgment
 hole I wrote is the rubric itself — scope feasibility, claim freshness, spec quality, fit,
-repo health, and an AI-policy check — every threshold in it is a decision I made about what
-"claimable by a student" means.
+repo health, and an AI-policy check — every threshold in it is a decision I made about what"claimable by a student" means.
 
 **How it evolved, dated:** 
 
