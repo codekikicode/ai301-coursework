@@ -17,7 +17,7 @@ files and no evidence uploads are part of Assignment 5.
 
 **Pull Request:** https://github.com/ESCOMP/CTSM/pull/4344
 
-One repository, built across units 5 to 8, telling the entire story of my contribution. 
+One repository, built across Units 5 to 8 (CodePath AI 301), telling the entire story of my contribution. 
 
 ---
 
@@ -267,7 +267,7 @@ A second, independent repro (use_c13, run from bld/unit_testers) was posted to t
 
 ## Solution Approach
 
-**Analysis**
+**Analysis:**
 
 `CLM_NAMELIST_OPTS` and `user_nl_clm` enter through `cime_config/buildnml` as the `-namelist` and `-infile` arguments to `bld/build-namelist`. In `CLMBuildNamelist.pm`, `process_namelist_user_input` (line 594) calls `process_namelist_commandline_namelist` (line 1524) first, then `process_namelist_commandline_infile` (line 1575), which calls `process_namelist_infile` (line 1547).
 
@@ -281,20 +281,20 @@ The check lives in `process_namelist_infile` (where `$nl_infile_valid` already e
 
 I reproduced this on master (`5e1da3a`): with `use_c13=.true.` passed via `-namelist` (what `CLM_NAMELIST_OPTS` maps to) and `use_c13=.false.` in the `-infile` (what `user_nl_clm` maps to), `build-namelist` completed with no error or warning, and the generated `lnd_in` contained `use_c13 = .true.` — the infile value was silently discarded. Repro details posted in this comment: https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-7086475038
 
-**Proposed Solution**
+**Proposed Solution:**
 
 - In `process_namelist_commandline_namelist`, record the set of variables (group + name) that the `-namelist` pass set (e.g. into `$nl_flags`), skipping known buildnml-injected variables such as `start_ymd`.
 - In `process_namelist_commandline_infile` (1575 — which handles only user `-infile` arguments), pass a new `check_namelist_opts_conflicts => 1` option to `process_namelist_infile`. There, before merging each user infile, enumerate `$nl_infile_valid` with `get_group_names`/`get_variable_names`/`get_variable_value`, collect any variables present in the recorded set (skipping `finidat`/`nrevsn`), and if the list is non-empty, `$log->fatal_error` naming every duplicated variable and telling the user to remove the setting from either `CLM_NAMELIST_OPTS` or `user_nl_clm` — per the issue text.
 - Out of scope, per the issue: duplicates within `user_nl` files, and no change to `merge_nl` itself (shared CIME code).
 
-**Implementation Plan**
+**Implementation Plan:**
 
 - Branch `fix/2256-namelist-opts-conflict` (or per CTSM convention).
 - Add the variable-set recording in `process_namelist_commandline_namelist` and the duplicate check in `process_namelist_infile` behind the new flag, passed only from `process_namelist_commandline_infile`.
 - Add a test to `bld/unit_testers/build-namelist_test.pl` that passes both a `-namelist` fragment and an infile setting the same variable, and asserts the death — using the existing fixture files (`myuser_nl_clm`/`empty_user_nl_clm`) as a model. Verify it fails without the fix, passes with it.
 - Run manifest checks (XML validation) and the reproduction steps; capture before/after output in `test_evidence.md`.
 
-**Toolkit**
+**Toolkit:**
 
 - Tool: plan-check (wild-scoped), run three times against plan.md + plan-comment.md.
 - What it produced: reject (no posted repro evidence) → reject (honest-uncertainty: my  plan contradicted itself — first-write-wins can't coexist with "later files override earlier ones") → accept, after it verified my code claims against the repo live and caught two real design risks I'd missed (start_ymd injected into -namelist, finidat/nrevsn into the infile).
@@ -304,11 +304,17 @@ I reproduced this on master (`5e1da3a`): with `use_c13=.true.` passed via `-name
 
 ## Testing Strategy
 
-Repro re-run (before/after): the exact steps in Reproduction Process, on my fix branch. Before: exit 0, silent, -namelist value wins. After (pass criteria): build-namelist dies non-zero, message names the duplicated variable(s) and says to remove the setting from CLM_NAMELIST_OPTS or user_nl_clm.
+**Repro re-run (before/after):** 
+The exact steps in Reproduction Process, on my fix branch. 
 
-Control re-run: variable only in user_nl_clm must still be honored (no false positive), and a conflict-free run must produce identical lnd_in to before.
-New unit test in bld/unit_testers/build-namelist_test.pl: same variable via -namelist and -infile, asserts death. Verified failing without the fix, passing with it.
-Manifest checks: python .github/workflows/validate_xml.py must pass. The full Perl suite is run as a before/after diff, since its baseline on Windows already fails (exit 254 — documented in ship-manifest.md); the criterion is "no new failures beyond baseline."
+- Before: exit 0, silent, -namelist value wins. 
+- After (pass criteria): build-namelist dies non-zero, message names the duplicated variable(s) and says to remove the setting from CLM_NAMELIST_OPTS or user_nl_clm.
+
+**Control re-run:** 
+Variable only in user_nl_clm must still be honored (no false positive), and a conflict-free run must produce identical lnd_in to before.
+
+- New unit test in bld/unit_testers/build-namelist_test.pl: same variable via -namelist and -infile, asserts death. Verified failing without the fix, passing with it.
+- Manifest checks: python .github/workflows/validate_xml.py must pass. The full Perl suite is run as a before/after diff, since its baseline on Windows already fails (exit 254 — documented in ship-manifest.md); the criterion is "no new failures beyond baseline."
 
 All output captured in test_evidence.md.
 
