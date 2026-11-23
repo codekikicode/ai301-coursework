@@ -30,22 +30,23 @@ itself.
 
 **ship-gate**
 
-**What it is, and the judgment hole I wrote:** a PreToolUse hook that runs my manifest of
-repo checks plus a PR pre-check before any outgoing command. The judgment hole I wrote is
-the ship-manifest: which checks count as "this branch is shippable" on this repo, on this
-machine — including the decision to document a check that *fails on unmodified master*
-(3425-test Perl suite, exit 254, 1052 pre-existing Windows failures) instead of hiding it.
+**What it is, and the judgment hole I wrote:** 
+A PreToolUse hook that runs my manifest of repo checks plus a PR pre-check before any outgoing command. 
+The judgment hole I wrote is the ship-manifest: which checks count as "this branch is shippable" on this repo, on this
+machine — including the decision to document a check that *fails on unmodified master* (3425-test Perl suite, exit 254, 1052 pre-existing Windows failures) instead of hiding it.
 
-**How it evolved, dated:** it fought me for a week before it ever fired (November 2026).
-Layer 1: stale Claude sessions don't reload hooks — learned by retaught-full-exit.
-Layer 2: the hook called `python3`, a broken Microsoft Store stub on my box — changed to
-`python`. Layer 3: the matcher said "Bash" but my Claude Code's shell tool is literally
-named "PowerShell" — and `Bash|PowerShell` alternation does not match. Layer 4, the real
-root cause: both course scripts gated on `tool_name != "Bash"` — I patched them to accept
-`("Bash", "PowerShell")` with sed and reported all of this in
-#dts-fa26-ai301-build-support (November 2026).
+**How it evolved, dated:** 
+It fought me for a week before it ever fired (November 2026).
+- Layer 1: Stale Claude sessions don't reload hooks — learned by retaught-full-exit.
+- Layer 2: The hook called `python3`, a broken Microsoft Store stub on my box — changed to
+`python`. 
+- Layer 3: The matcher said "Bash" but my Claude Code's shell tool is literally
+named "PowerShell" — and `Bash|PowerShell` alternation does not match. 
+- Layer 4: The real root cause: both course scripts gated on `tool_name != "Bash"` — I patched them to accept
+`("Bash", "PowerShell")` with sed.
 
-**Evidence:** the verification, live — ship-gate STOPs `gh pr create` (exit 2) mid-session,
+**Evidence:** 
+The verification, live — ship-gate STOPs `gh pr create` (exit 2) mid-session,
 after silently passing it for days. And from my Unit 7 work: the red→green pair of the new
 failtest it shipped alongside — `not ok 1189 - namelist_opts_infile_conflict` on
 unmodified master vs `ok 1189` with my fix, with CSMDATA set both times.
@@ -80,7 +81,8 @@ wrote is the voice guide — no promised dates, no unverifiable claims, disclose
 plus the final settings.json wiring: matcher "PowerShell", backslash paths, `python` not
 `python3`.
 
-**How it evolved, dated:** it never fired on the first wiring test (October 2026). Three
+**How it evolved, dated:** 
+It never fired on the first wiring test (late October 2026). Three
 causes, three fixes: `ln -s` under MSYS made silent copies instead of symlinks (pointer-file
 fallback); the machine had no Python at all, so the hook's `python3` could never have run
 (installed 3.12, rewrote the hook); the checker couldn't launch npm's claude.CMD via
@@ -88,7 +90,9 @@ subprocess on Windows, so I installed the native claude.exe build — all report
 #dts-fa26-ai301-build-support (October–November 2026). Later it needed the same
 PowerShell/tool_name patch as ship-gate once I found that root cause.
 
-**Evidence:** live verification — voice-guard STOPs `gh issue create --help`, and both my
+**Evidence:** 
+
+Live verification — voice-guard STOPs `gh issue create --help`, and both my
 posted comments (the claim comment and the repro comment on ESCOMP/CTSM#2256) passed
 through it carrying my AI-disclosure line, which now reads as a habit rather than a
 compliance step.
