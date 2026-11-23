@@ -11,7 +11,7 @@ files and no evidence uploads are part of Assignment 5.
 **Student:** Kiyali Ross
 **GitHub Username:** codekikicode
 **Issue:** https://github.com/ESCOMP/CTSM/issues/2256
-**Pull Request:** [to be opened in Unit 7/8]
+**Pull Request:** https://github.com/ESCOMP/CTSM/pull/4344
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -23,36 +23,6 @@ just numbers them.
 ---
 
 ## Toolkit
-
-Every story section below, from Why I Chose This Issue through Pull
-Request, ends with a Toolkit block: which tool did that phase's work
-and how you used it, what it produced, what difficulties or
-shortcomings it presented, and what you changed or would change
-because of them. Together the blocks are the thread the rubric's
-Toolkit points read, and they are the raw material for your unit-9
-portfolio, so keep them current as you work rather than
-reconstructing them later.
-
-A Toolkit block looks like this (copy it into each story section and
-fill it there):
-
-````
-**Toolkit**
-
-- Tool: [which tool did this phase's work, and how you used it]
-- What it produced: [described in a sentence or a short excerpt]
-- Difficulties: [what fought you or fell short, or "none met"]
-- What changed: [the patch, revision, or workaround, what you would
-  update, or "nothing"]
-````
-
-This section also keeps one short dated entry per week of tool work,
-starting below: what you built or changed that week, what broke, and
-what you changed because of it. The blocks tell the story where it
-happened; these entries are the toolkit's own timeline.
-
-All four entries are graded. Keep every heading below, and fill each
-one in the week it belongs to.
 
 **Unit 5: Built my issue-scout, then rebuilt its rubric twice to choose my issue**
 
@@ -334,45 +304,45 @@ All output captured in test_evidence.md.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
-
+- Tool: ship-manifest checks plus the red/green Perl suite pair; evidence captured in test_evidence.md.
+- What it produced: the new failtest red on unmodified master with CSMDATA set (`not ok`), the manual rehearsal flipping from silent `exit: 0` to the fatal_error naming `mksrf_lsmlon`, both no-conflict control runs staying green, and the post-fix suite run flipping the test to `ok` with no new failures against the documented Windows baseline.
+- Difficulties: 3425 tests at roughly an hour per run on Windows; grep refused the binary-ish suite output until `-a`; the suite and any manual rehearsal share the working directory and cannot run concurrently; and the suite's default inputdata root (a Yellowstone cluster path) manufactures false-passes on any non-NCAR machine unless CSMDATA is set.
+- What changed: every suite invocation now carries CSMDATA=/tmp/inputdata, and the exit-254 baseline is recorded in ship-manifest.md as a documented platform failure instead of being fought or hidden.
 ---
 
 ## Implementation Notes
 
-**[2026-11-23]**
+**[2026-11-22]**
+
+Built the fix on fix/2256-namelist-opts-conflict: the recording loop in
+process_namelist_commandline_namelist (start_ymd skipped), and the conflict
+check in process_namelist_infile behind check_namelist_opts_conflicts
+(finidat/nrevsn skipped), enabled only from process_namelist_commandline_infile
+so CAM's drv_flds_in call at line ~4390 is untouched. Wrong turns: the check
+landed in three pieces across two days — a check that records but never fires
+looks identical to no check until the flag is wired through; and the suite's
+default inputdata path manufactured a false pass that only the manual
+rehearsal exposed. PR #4344 opened the same day; ship-gate caught four
+formatting defects in pr_draft.md before they went public.
+
+**[2026-11-22]**
 
 Plan accepted by plan-check on the third run. Key design decisions locked: check lives in process_namelist_infile behind a new check_namelist_opts_conflicts => 1 flag passed only by process_namelist_commandline_infile (keeps CAM's drv_flds_in call at line 4390 unaffected); start_ymd skipped on the -namelist side and finidat/nrevsn on the infile side because buildnml injects those itself. Wrong turn recorded: my first plan rejected die_on_conflict with a "later files override earlier ones" argument that contradicts first-write-wins — plan-check caught it against buildnml:382
 
-
-**[2026-11-23]**
-
-Built the fix on fix/2256-namelist-opts-conflict: recording loop in
-process_namelist_commandline_namelist (start_ymd skipped), the conflict check in
-process_namelist_infile behind check_namelist_opts_conflicts (finidat/nrevsn
-skipped), enabled only from process_namelist_commandline_infile so CAM's
-drv_flds_in path at line ~4390 is untouched. Wrong turns: Edit 3 landed in three
-pieces across two days — a check that records but never fires looks identical to
-no check until you wire the flag; and the suite's default inputdata path
-manufactured a false pass that only manual rehearsal exposed. PR #4344 opened;
-ship-gate caught four formatting defects in pr_draft.md before they went public.
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
-
+- Tool: Claude Code as the implementing pair — I described each edit target, it produced the patch, I applied and verified each hunk with perl -c, grep, and rehearsal runs.
+- What it produced: the three-edit patch to CLMBuildNamelist.pm, the failtest entry and fixture, and the before/after evidence pair behind PR #4344.
+- Difficulties: the two-copy Edit 3 (half-applied patch, silently inert check) cost a debugging round; and the pager-mangled git diff paste made review harder than the patch deserved.
+- What changed: after the half-applied edit, I started verifying each hunk with grep for its marker strings before any test run — "is the flag actually passed?" became a checklist step.
 ---
 
 ## Pull Request
 
 **PR Link:** https://github.com/ESCOMP/CTSM/pull/4344
 
-**PR Description:** Adapted from this story: the silent-override root cause
+**PR Description:** 
+Adapted from this story: the silent-override root cause
 (CLM_NAMELIST_OPTS/-namelist merges first, merge_nl first-write-wins), the fix
 (recorded -namelist variable set with start_ymd skipped; conflict check behind
 check_namelist_opts_conflicts in process_namelist_infile, enabled only on the
@@ -383,7 +353,8 @@ user-infile path; finidat/nrevsn skipped), the new failtest
 **Maintainer Feedback:**
 
 - [2026.23.11]: None yet
-- [Date]: [how you addressed it]
+
+- [2026.23.11]: PR just opened, so no maintainer review/response yet. 
 
 **Status:** Awaiting review. 
 
@@ -407,25 +378,42 @@ user-infile path; finidat/nrevsn skipped), the new failtest
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+Perl in a 6000-line production module — reading `CLMBuildNamelist.pm`'s merge
+order and the `Build::Namelist` API (get_group_names/get_variable_names) well
+enough to add a parameter-threaded check without touching shared CIME code.
+Test-first on an unfamiliar harness: writing a data-driven failtest entry in
+build-namelist_test.pl from existing entries' shape. Windows reality under
+Git Bash: process names, MSYS path mapping, python launcher stubs, and what
+"the hook ran" actually requires verifying.
 
 **Challenges Overcome**
-
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+The silent ship-gate (four stacked causes: stale sessions, python3 stub,
+PowerShell-vs-Bash matcher, and the tool_name gate inside the course scripts
+themselves) — diagnosed layer by layer with canary hooks and payload logging,
+then fixed and reported. The false-pass suite run — my "red" test passed for
+the wrong reason until I traced the Yellowstone default inputdata path.
+And plan-check's honest-uncertainty rejection, which forced me to delete an
+argument I liked but couldn't verify — the plan that survived it is the one
+my merged fix was built from.
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+Verify the gate before trusting it — a canary hook and one deliberate
+outgoing-command test on day one would have saved a week. Diff suite output
+against a stored baseline file instead of eyeballing before/after logs.
+And write the repro as a runnable script from the start rather than
+reconstructing it from terminal history.
 
 ---
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
+- ESCOMP/CTSM#2256 — the issue thread itself: the maintainer's spec
+  ("change one or the other") and scope carve-outs defined the fix; my claim
+  comment (#issuecomment-6869064418) and repro comment
+  (#issuecomment-7086475038) live there.
+- The repo's own harness: bld/unit_testers/build-namelist_test.pl supplied
+  the failtest pattern, make_config_cache/make_env_run fixtures, and the
+  clmexp variable candidates from namelist_definition_ctsm.xml.
+- Claude Code documentation and the course's INSTALL.md/ship-gate materials
+  for the hook wiring that the Windows bugs were measured against.
