@@ -414,10 +414,10 @@ my merged fix was built from.
 
 **What I'd Do Differently Next Time**
 
-Verify the gate before trusting it — a canary hook and one deliberate
-outgoing-command test on day one would have saved a week. Diff suite output
-against a stored baseline file instead of eyeballing before/after logs.
-And write the repro as a runnable script from the start rather than
+- Verify the gate before trusting it: A canary hook and one deliberate
+outgoing-command test on day one would have saved me a week of testing. 
+- Diff suite output against a stored baseline file instead of eyeballing before/after logs.
+- Write the repro as a runnable script from the start rather than
 reconstructing it from terminal history.
 
 ---
