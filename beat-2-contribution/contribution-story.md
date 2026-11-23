@@ -62,10 +62,9 @@ I installed the issue-scout over my unit-1 issue-select, wrote my fit profile, a
 
 The voice guard fought me three times before it fired: MSYS ln -s made silent copies instead of symlinks (fixed with the pointer-file fallback), my machine had no Python at all so the hook's python3 call could never have worked (installed 3.12, rewrote the hook to python + absolute path), and the first wiring test ran unblocked because my Claude session predated the settings edit. Then a subtler one: the guard's checker can't launch npm's claude.CMD on Windows (subprocess with shell=False), so I installed the native claude.exe build — reported in #dts-fa26-ai301-build-support. The memory file paid off immediately: orienting bld/ surfaced the test gap (no test sets the same variable in both -namelist and -infile), which is where my fix's test will go.
 
-**Unit 7: [one line on the tool work]**
+**Unit 7: Installed the ship-gate and fought Windows for a week to make it fire**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
+The installer wrote my ship-manifest (3 checks: validate_xml.py passes; the Perl namelist test driver fails on unmodified master on my machine — exit 254, a platform quirk I documented rather than hid; Python tests blocked, no conda). Then the hook saga: the gate silently never ran because (1) the hook called python3, which is a broken Microsoft Store stub on this box, (2) the matcher said Bash but my Claude Code's shell tool is literally named PowerShell (and Bash|PowerShell alternation doesn't match), and (3) the course scripts themselves gated on tool_name != "Bash" — I patched both scripts to accept ("Bash", "PowerShell") and reported all three bugs in #dts-fa26-ai301-build-support. Verified live: ship-gate STOPs a gh pr create.
 
 **Unit 8: [one line on the tool work]**
 
@@ -131,10 +130,10 @@ The build-namelist layer: bld/CLMBuildNamelist.pm (where namelist precedence is 
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code guided source tracing, plus my Unit 6 repo memory file from the   scoped orientation run over bld/.
+- What it produced: the causal chain from CLM_NAMELIST_OPTS/user_nl_clm through cime_config/buildnml into CLMBuildNamelist.pm's two merge passes, and the discovery that the test suite never sets the same variable in both places (the test gap my fix's test fills).
+- Difficulties: no maintainer response to my claim-comment question about where the check belongs — I proceeded on the issue text's own specification.
+- What changed: nothing in the tooling; the "pending maintainer confirmation" hedge stayed in the text as an honest record.
 
 ---
 
@@ -186,7 +185,6 @@ The build-namelist layer: bld/CLMBuildNamelist.pm (where namelist precedence is 
   platform; ignored.
 
 **Steps to Reproduce**
-
 
 In /tmp/repro (containing the two fixtures above), with this
 user_nl_clm setting one variable:
@@ -249,6 +247,8 @@ Control case: `hist_mfilt = 5` — the file is honored when nothing
 conflicts, so the silent loss happens only on duplication, not from
 the infile being ignored outright.
 
+A second, independent repro (use_c13, run from bld/unit_testers) was posted to the issue thread: [link]" — or swap one to match the other.
+
 **My findings:** 
 - The issue is real today: a variable set in both CLM_NAMELIST_OPTS
   and user_nl_clm is silently accepted, CLM_NAMELIST_OPTS winning.
@@ -268,7 +268,6 @@ the infile being ignored outright.
   test belongs there.
 - Commit showing reproduction: none — evidence is the terminal
   output pasted above, rerun from the steps in this report.
-
 
 **Toolkit**
 
@@ -291,39 +290,46 @@ the infile being ignored outright.
 ## Solution Approach
 
 **Analysis**
+`CLM_NAMELIST_OPTS` and `user_nl_clm` enter through `cime_config/buildnml` as the `-namelist` and `-infile` arguments to `bld/build-namelist`. In `CLMBuildNamelist.pm`, `process_namelist_user_input` (line 594) calls `process_namelist_commandline_namelist` (line 1524) first, then `process_namelist_commandline_infile` (line 1575), which calls `process_namelist_infile` (line 1547).
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+Both merge via `Build::Namelist::merge_nl` (`cime/utils/perl5lib/Build/Namelist.pm:373`), which is first-write-wins: variables already set are silently skipped. So any item set in both places keeps the `CLM_NAMELIST_OPTS` value and the user's `user_nl_clm` edit is silently discarded — exactly the behavior described in the issue. The issue asks for a clear "change one or the other" message when a setting appears in both `CLM_NAMELIST_OPTS` and `user_nl_clm`, so the check belongs in `CLMBuildNamelist.pm`.
+
+`Build::Namelist::merge_nl` has a `die_on_conflict` option, and `process_namelist_infile` already passes `die_on_conflict =&gt; 1` for one call — but it can't be the whole fix. Its error message is generic ("A variable was already set...") and doesn't name `CLM_NAMELIST_OPTS` or `user_nl_clm`, which is exactly the clear message the issue asks for. (I initially suspected a conflict risk across multiple sequential infiles, but `cime_config/buildnml:382` passes a single combined `-infile`, so I dropped that argument rather than assert it unverified.)
+
+Two risks to design around, both from `cime_config/buildnml` injecting content the user didn't write: (1) it always adds `start_ymd=&lt;RUN_STARTDATE&gt;` to the `-namelist` string alongside `CLM_NAMELIST_OPTS` (~line 382), so `start_ymd` must be skipped when recording `-namelist` variables; (2) for branch/hybrid runs it writes `finidat`/`nrevsn` lines into the combined infile (~line 367), so those are skipped in the comparison too. Known trade-off: a user who genuinely sets `finidat` in both `CLM_NAMELIST_OPTS` and `user_nl_clm` won't get the error — accepted, since a false blame is worse than a missed one.
+
+The check lives in `process_namelist_infile` (where `$nl_infile_valid` already exists), behind a new option — e.g. `check_namelist_opts_conflicts =&gt; 1` — that only `process_namelist_commandline_infile` passes. The CAM `drv_flds_in` call at line 4390 doesn't pass the flag, so it's unaffected.
+
+I reproduced this on master (`5e1da3a`): with `use_c13=.true.` passed via `-namelist` (what `CLM_NAMELIST_OPTS` maps to) and `use_c13=.false.` in the `-infile` (what `user_nl_clm` maps to), `build-namelist` completed with no error or warning, and the generated `lnd_in` contained `use_c13 = .true.` — the infile value was silently discarded. Repro details posted in this comment: https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-7086475038
 
 **Proposed Solution**
-
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+- In `process_namelist_commandline_namelist`, record the set of variables (group + name) that the `-namelist` pass set (e.g. into `$nl_flags`), skipping known buildnml-injected variables such as `start_ymd`.
+- In `process_namelist_commandline_infile` (1575 — which handles only user `-infile` arguments), pass a new `check_namelist_opts_conflicts => 1` option to `process_namelist_infile`. There, before merging each user infile, enumerate `$nl_infile_valid` with `get_group_names`/`get_variable_names`/`get_variable_value`, collect any variables present in the recorded set (skipping `finidat`/`nrevsn`), and if the list is non-empty, `$log->fatal_error` naming every duplicated variable and telling the user to remove the setting from either `CLM_NAMELIST_OPTS` or `user_nl_clm` — per the issue text.
+- Out of scope, per the issue: duplicates within `user_nl` files, and no change to `merge_nl` itself (shared CIME code).
 
 **Implementation Plan**
-
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
-
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+- Branch `fix/2256-namelist-opts-conflict` (or per CTSM convention).
+- Add the variable-set recording in `process_namelist_commandline_namelist` and the duplicate check in `process_namelist_infile` behind the new flag, passed only from `process_namelist_commandline_infile`.
+- Add a test to `bld/unit_testers/build-namelist_test.pl` that passes both a `-namelist` fragment and an infile setting the same variable, and asserts the death — using the existing fixture files (`myuser_nl_clm`/`empty_user_nl_clm`) as a model. Verify it fails without the fix, passes with it.
+- Run manifest checks (XML validation) and the reproduction steps; capture before/after output in `test_evidence.md`.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
-
+- Tool: plan-check (wild-scoped), run three times against plan.md + plan-comment.md.
+- What it produced: reject (no posted repro evidence) → reject (honest-uncertainty: my  plan contradicted itself — first-write-wins can't coexist with "later files override earlier ones") → accept, after it verified my code claims against the repo live and caught two real design risks I'd missed (start_ymd injected into -namelist, finidat/nrevsn into the infile).
+- Difficulties: it read the actual CTSM source to check my claims — I couldn't hand-wave. It also ruled my plan-comment stays off the thread until a maintainer replies.
+- What changed: posted a standalone repro comment; dropped the unverifiable multi-infile argument and said so openly; moved the check behind a flag so CAM's drv_flds_in call is unaffected; added skip-lists for buildnml-injected variables.
 ---
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+Repro re-run (before/after): the exact steps in Reproduction Process, on my fix branch. Before: exit 0, silent, -namelist value wins. After (pass criteria): build-namelist dies non-zero, message names the duplicated variable(s) and says to remove the setting from CLM_NAMELIST_OPTS or user_nl_clm.
+
+Control re-run: variable only in user_nl_clm must still be honored (no false positive), and a conflict-free run must produce identical lnd_in to before.
+New unit test in bld/unit_testers/build-namelist_test.pl: same variable via -namelist and -infile, asserts death. Verified failing without the fix, passing with it.
+Manifest checks: python .github/workflows/validate_xml.py must pass. The full Perl suite is run as a before/after diff, since its baseline on Windows already fails (exit 254 — documented in ship-manifest.md); the criterion is "no new failures beyond baseline."
+
+All output captured in test_evidence.md.
 
 **Toolkit**
 
@@ -336,12 +342,9 @@ observable named is not a strategy.]
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
+**[2026-11-23]**
 
-**[Date]**
-
-[Entry]
+Plan accepted by plan-check on the third run. Key design decisions locked: check lives in process_namelist_infile behind a new check_namelist_opts_conflicts => 1 flag passed only by process_namelist_commandline_infile (keeps CAM's drv_flds_in call at line 4390 unaffected); start_ymd skipped on the -namelist side and finidat/nrevsn on the infile side because buildnml injects those itself. Wrong turn recorded: my first plan rejected die_on_conflict with a "later files override earlier ones" argument that contradicts first-write-wins — plan-check caught it against buildnml:382
 
 **[Date]**
 
