@@ -2,55 +2,9 @@
 
 Path: `beat-3-portfolio/toolkit-portfolio.md`
 
-This file is Assignment 6, and it is graded at the path above; a copy kept anywhere else in
-the repository is not read. It has been waiting here since you created the repo in unit 1;
-unit 9 is when you write it.
-
-**Only this page is read.** Your `tools/` folders and your installed skill folders are never
-opened, so every piece of evidence you want seen has to live inline here: an output excerpt,
-a before/after pair, a dated commit reference.
-
-**Write every sentence yourself.** AI may gather diffs, dates and excerpts for you; it does
-not draft entries.
-
-**Keep every section header below under its exact name** — Featured Tools, Inventory, The
-Arc, and Limitations and What's Next. Feature three or four tools, each in the entry shape
-shown below; give every other tool one inventory line.
-
-**Some lines below are labelled, and the label is how they are read.** Three places on this
-page use a `Label: your words` shape — the arc's beats, the tool-limits list, and nothing
-else. Keep those labels exactly as written, one per line, and never delete a labelled line:
-where you have nothing to put after a label, write `none` and move on. A deleted label reads
-as a deleted answer.
-
-**Before you finish**, replace every `[bracketed prompt]` with your own words, then delete
-the unused `[Tool name]` entry stub, its copy-me sentence, and the prompt sentences under
-each header. A leftover bracketed prompt reads as unfilled.
-
 **Student:** Kiyali Ross
 
 ## Featured Tools
-
-## Featured Tools
-
-Three or four tools, presented in depth. Open with a few sentences
-on why you chose these.
-
-Full credit asks the featured set to show real change: **at least two** of your featured
-entries should show a tool that visibly moved through use. An honest entry for a tool that
-barely changed — saying so, dating what did happen, and giving the reason — earns the solid
-middle tier and never fails you.
-
-Each tool's honest limit is not written here. It goes in the tool-limits list at the
-bottom of this page, one line per featured tool, so that the limits sit together and can
-be read as a set.
-
-These four earned the feature slots because each one failed me in a way I could not have
-predicted at install time, and each failure left a visible mark on the tool or on how I
-use it. The issue-scout shaped what I chose to work on; voice-gate and ship-gate are the
-two gates my work actually passed through before leaving my machine; plan-check is the one
-that graded my thinking against the repository itself and caught me asserting things I had
-not verified. In every case the tool became mine in the patching, not the installing.
 
 **issue-scout**
 
@@ -249,8 +203,9 @@ output against a stored baseline instead of relying on me to eyeball before/afte
 I would also upstream the Windows hook fixes — the tool_name gate, the python3 assumption,
 the Bash matcher — since every Windows student behind me will hit the same four layers.
 
-**Tool limits.** 
+**Tool limits** 
 
-- issue-ship-gate: it runs what the manifest lists; it cannot tell whether the manifest is sufficient — my false-pass scare was caught by reasoning, not by the gate, and the Windows-baseline failure is documented rather than resolved.
-- issue-plan-check: it can only grade what exists on the thread and in the files — it could not see the CSMDATA environment trap, and its code-claim checking stops where the live session's access does.
-- issue-voice-guard: it holds wording, not truth — a confidently wrong claim in my voice still passes; that hole is only covered because plan-check exists.
+issue-scout: its rubric still can't express label-scoped AI policies — the django-rusty-templates rejection needed a sentence I wrote by hand — and its difficulty read is coarse: "ambitious"/"middling" told me little about what the Perl work would actually feel like.
+ship-gate: it runs what the manifest lists; it cannot tell whether the manifest is sufficient — my false-pass scare was caught by reasoning, not by the gate, and the Windows-baseline failure is documented rather than resolved.
+plan-check: it can only grade what exists on the thread and in the files — it could not see the CSMDATA environment trap, and its code-claim checking stops where the live session's access does.
+voice-guard: it holds wording, not truth — a confidently wrong claim in my voice still passes; that hole is only covered because plan-check exists.
