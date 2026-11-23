@@ -8,17 +8,16 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
+
 **Student:** Kiyali Ross
+
 **GitHub Username:** codekikicode
+
 **Issue:** https://github.com/ESCOMP/CTSM/issues/2256
+
 **Pull Request:** https://github.com/ESCOMP/CTSM/pull/4344
 
-One repository, built across units 5 to 8, telling the whole story of your real
-contribution. Fill it as you work, not at the end — the sections below ask for evidence that
-is far easier to write down as it happens than to reconstruct in the last weekend.
-
-Contribution Number stays `[1]` unless you make more than one contribution this term; it
-just numbers them.
+One repository, built across units 5 to 8, telling the entire story of my contribution. 
 
 ---
 
@@ -38,10 +37,18 @@ The installer wrote my ship-manifest (3 checks: validate_xml.py passes; the Perl
 
 **Unit 8: Pointed the PR-monitor at PR #4344 and let it watch**
 
-The pr-monitor reads PR state against my playbook and drafts follow-ups. On
-ESCOMP/CTSM#4344 it read [CI status / review state] and drafted [nothing needed /
-a follow-up comment when X]. What fought me: [placeholder]. What changed because
-of it: [placeholder — e.g., I added a playbook rule that ...].
+The pr-monitor reads the PR's live state from my clone and drafts the next move
+from my playbook. On its first full run (2026-11-23) it read: 1 check passing,
+mergeable, REVIEW_REQUIRED, 0 comments/reviews, and a QUIET state (under a day
+since the last activity by anyone but me). It drafted: "No nudge. Wait note: the
+playbook's threshold is not met" — the 30-day staleness rule I wrote did its job
+on day one, correctly refusing to ping a maintainer hours after the PR opened.
+What fought me: the monitor refused to run until my playbook had real rules in
+all four sections — twice, because my first edit never saved. What changed: the
+playbook is now a written-down patience contract (14/30-day thresholds, one
+nudge ever, walk-away at 60 days past it), and the monitor is how I check myself
+against it weekly instead of refreshing the PR page on instinct.
+
 ---
 
 ## Why I Chose This Issue
@@ -218,7 +225,7 @@ Control case: `hist_mfilt = 5` — the file is honored when nothing
 conflicts, so the silent loss happens only on duplication, not from
 the infile being ignored outright.
 
-A second, independent repro (use_c13, run from bld/unit_testers) was posted to the issue thread: [link]" — or swap one to match the other.
+A second, independent repro (use_c13, run from bld/unit_testers) was posted to the issue thread: [https://github.com/ESCOMP/CTSM/issues/2256#issuecomment-6869064418] — or swap one to match the other.
 
 **My findings:** 
 - The issue is real today: a variable set in both CLM_NAMELIST_OPTS
