@@ -66,11 +66,12 @@ The voice guard fought me three times before it fired: MSYS ln -s made silent co
 
 The installer wrote my ship-manifest (3 checks: validate_xml.py passes; the Perl namelist test driver fails on unmodified master on my machine — exit 254, a platform quirk I documented rather than hid; Python tests blocked, no conda). Then the hook saga: the gate silently never ran because (1) the hook called python3, which is a broken Microsoft Store stub on this box, (2) the matcher said Bash but my Claude Code's shell tool is literally named PowerShell (and Bash|PowerShell alternation doesn't match), and (3) the course scripts themselves gated on tool_name != "Bash" — I patched both scripts to accept ("Bash", "PowerShell") and reported all three bugs in #dts-fa26-ai301-build-support. Verified live: ship-gate STOPs a gh pr create.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: Pointed the PR-monitor at PR #4344 and let it watch**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
-
+The pr-monitor reads PR state against my playbook and drafts follow-ups. On
+ESCOMP/CTSM#4344 it read [CI status / review state] and drafted [nothing needed /
+a follow-up comment when X]. What fought me: [placeholder]. What changed because
+of it: [placeholder — e.g., I added a playbook rule that ...].
 ---
 
 ## Why I Chose This Issue
@@ -346,10 +347,18 @@ All output captured in test_evidence.md.
 
 Plan accepted by plan-check on the third run. Key design decisions locked: check lives in process_namelist_infile behind a new check_namelist_opts_conflicts => 1 flag passed only by process_namelist_commandline_infile (keeps CAM's drv_flds_in call at line 4390 unaffected); start_ymd skipped on the -namelist side and finidat/nrevsn on the infile side because buildnml injects those itself. Wrong turn recorded: my first plan rejected die_on_conflict with a "later files override earlier ones" argument that contradicts first-write-wins — plan-check caught it against buildnml:382
 
-**[Date]**
 
-[Entry]
+**[2026-11-23]**
 
+Built the fix on fix/2256-namelist-opts-conflict: recording loop in
+process_namelist_commandline_namelist (start_ymd skipped), the conflict check in
+process_namelist_infile behind check_namelist_opts_conflicts (finidat/nrevsn
+skipped), enabled only from process_namelist_commandline_infile so CAM's
+drv_flds_in path at line ~4390 is untouched. Wrong turns: Edit 3 landed in three
+pieces across two days — a check that records but never fires looks identical to
+no check until you wire the flag; and the suite's default inputdata path
+manufactured a false pass that only manual rehearsal exposed. PR #4344 opened;
+ship-gate caught four formatting defects in pr_draft.md before they went public.
 **Toolkit**
 
 - Tool:
@@ -361,27 +370,36 @@ Plan accepted by plan-check on the third run. Key design decisions locked: check
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/ESCOMP/CTSM/pull/4344
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** Adapted from this story: the silent-override root cause
+(CLM_NAMELIST_OPTS/-namelist merges first, merge_nl first-write-wins), the fix
+(recorded -namelist variable set with start_ymd skipped; conflict check behind
+check_namelist_opts_conflicts in process_namelist_infile, enabled only on the
+user-infile path; finidat/nrevsn skipped), the new failtest
+(namelist_opts_infile_conflict) with fixture, and the before/after evidence
+(silent exit 0 → fatal_error naming mksrf_lsmlon; control runs green).
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
+- [2026.23.11]: None yet
 - [Date]: [how you addressed it]
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review. 
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-manifest checks + the red/green suite pair, evidence in test_evidence.md.
+- What it produced: failtest red on unmodified master with CSMDATA set (not ok —
+  the earlier "ok" was a false pass from the Yellowstone default inputdata path,
+  caught and documented), rehearsal flipped from silent exit 0 to the fatal_error
+  naming mksrf_lsmlon, both no-conflict controls stayed exit 0, and the green run
+  showed ok with no new failures vs. the documented Windows baseline.
+- Difficulties: 3425 tests × ~1 hour per run on Windows; grep refused the binary-ish
+  output until -a; the suite and any manual rehearsal share the working directory
+  and can't run concurrently.
+- What changed: all suite invocations now carry CSMDATA=/tmp/inputdata, and the
+  baseline-exit-254 quirk is recorded in ship-manifest.md instead of being fought.
 
 ---
 
